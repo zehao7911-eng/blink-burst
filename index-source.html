@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15142e">
+<meta name="description" content="A comic arcade game of quick pops, charged bursts and dangerous decoys.">
+<title>Blink Burst · Pop Arcade</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="cabinet">
+  <header>
+    <div class="brand"><span class="mini-eye" aria-hidden="true">◉</span> BLINK BURST</div>
+    <div class="top-actions">
+      <button id="sound" class="small" aria-label="Mute sound">♫</button>
+      <button id="pause" class="small" aria-label="Pause game" disabled>Ⅱ</button>
+    </div>
+  </header>
+  <section class="scoreboard" aria-label="Round stats">
+    <div><small>GOO</small><strong id="score">0</strong></div>
+    <div><small>BEST</small><strong id="best">0</strong></div>
+    <div class="life-panel"><small>LIVES</small><div id="lives" aria-label="5 lives"><i></i><i></i><i></i><i></i><i></i></div></div>
+  </section>
+  <section id="stage" aria-label="Target arena">
+    <div class="ink" aria-hidden="true"></div>
+    <div id="targets"></div>
+    <div id="effects" aria-hidden="true"></div>
+    <div id="overlay" class="overlay">
+      <div class="card">
+        <div class="label" id="tag">AFTER HOURS ARCADE</div>
+        <h1 id="title"><span>BLINK</span> BURST</h1>
+        <p id="description">The eyes are opening.</p>
+        <button id="action" class="big">TAP TO PLAY</button>
+        <button id="restart" class="secondary" hidden>Start a new round</button>
+      </div>
+    </div>
+  </section>
+  <section class="legend" aria-label="How to play">
+    <div><i class="chip pop-chip">◉</i><b>POP</b><span>Tap orange</span></div>
+    <div><i class="chip hold-chip">◎</i><b>HOLD</b><span>Charge pink</span></div>
+    <div><i class="chip trap-chip">×</i><b>AVOID</b><span>Skip crossed</span></div>
+  </section>
+  <footer><span id="status" role="status">Miss a good target and lose a life.</span><span id="bonus" hidden></span></footer>
+</main>
+<script type="module" src="./app.mjs"></script>
+</body>
+</html>

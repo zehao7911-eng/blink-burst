@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15142e">
+<meta name="description" content="A comic arcade game of quick pops, charged bursts and dangerous decoys.">
+<title>Blink Burst · Pop Arcade</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#fff3d8;background:#15142e;color-scheme:dark;--night:#171633;--ink:#161525;--cream:#fff1cb;--mint:#8bf6cc;--pink:#ff67ad;--orange:#ffba51}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 48% 4%,#36305f,#1e1b42 55%,#15142e)}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+button:disabled{cursor:default;opacity:.48}
+[hidden]{display:none!important}
+.cabinet{width:min(780px,100%);margin:auto;padding:max(13px,env(safe-area-inset-top)) max(15px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(15px,env(safe-area-inset-left))}
+header,.scoreboard,.legend,footer{display:flex;align-items:center;justify-content:space-between;gap:9px}
+header{margin-bottom:10px}.brand{font-size:15px;font-weight:1000;letter-spacing:.13em;display:flex;align-items:center;gap:9px}
+.mini-eye{display:grid;place-items:center;width:31px;height:27px;background:var(--mint);color:#213042;border:2px solid var(--ink);border-radius:46% 13%;transform:rotate(-12deg);font-size:18px;box-shadow:2px 3px var(--ink)}
+.mini-eye.gold{background:#ffd170;color:#3e2531;box-shadow:2px 3px var(--ink),0 0 15px #ffd17077}
+.top-actions{display:flex;gap:6px}.small{width:44px;height:44px;border:2px solid #151423;background:#433b65;border-radius:10px;font-weight:900;font-size:20px;box-shadow:0 3px #131124}
+.scoreboard{margin-bottom:11px}.scoreboard>div{min-width:0;display:flex;align-items:center;gap:10px;flex:1;padding:5px 12px;background:#2d284c;border:2px solid #110f24;border-radius:10px;box-shadow:0 3px #121126}
+.scoreboard small,.label,footer{font:800 10px/1.2 ui-monospace,Consolas,monospace;letter-spacing:.11em;color:#cec4ea}.scoreboard strong{font-size:25px;line-height:1.2;color:#ffe288;font-variant-numeric:tabular-nums}
+.life-panel{flex:1.4!important}.life-panel div{display:flex;gap:3px}
+.life-panel i{display:block;width:13px;height:19px;background:#fff1ce;border:2px solid #16132b;border-radius:2px 2px 7px 7px;transform:rotate(7deg)}
+.life-panel i.lost{background:#17152b;border-color:#2e294d}
+#stage{position:relative;isolation:isolate;height:clamp(260px,61dvh,490px);border:3px solid #0e0c20;border-radius:19px;overflow:hidden;background:radial-gradient(ellipse at 50% 38%,#292451,#15142d 78%);box-shadow:0 8px #0f0e23;touch-action:none}
+.ink,#targets,#effects,.overlay{position:absolute;inset:0}.ink{pointer-events:none;background-image:radial-gradient(#8980bf2b 1px,transparent 1px),repeating-linear-gradient(135deg,transparent 0 110px,#6d5fb118 111px 112px,transparent 113px 180px);background-size:13px 13px,auto;mask-image:linear-gradient(white,#ffffff77)}
+.overlay{display:grid;place-items:center;z-index:3;background:#17142e55;padding:10px;touch-action:manipulation}
+.card{position:relative;text-align:center;width:min(94%,440px);padding:22px 14px 24px;background:#272044;border:3px solid var(--ink);border-radius:25px 32px 21px 30px;box-shadow:7px 8px #110d22,0 0 42px #ad5be941;transform:rotate(-2deg)}
+.card::after{content:"✷";color:#ffc665;position:absolute;right:14px;top:10px;font-size:25px;transform:rotate(12deg)}
+.label{color:var(--mint);margin:0 0 8px}.card h1{font-weight:1000;font-style:italic;line-height:.92;font-size:clamp(36px,9vw,74px);letter-spacing:-.08em;margin:0;color:#ffe47b;text-shadow:3px 4px #101022}
+.card h1 span{color:var(--pink)}.card p{color:#ece2f6;font-weight:700;margin:12px 0}
+.big{min-height:52px;border:3px solid #171222;border-radius:12px;background:var(--pink);color:#23132d;padding:7px 23px;box-shadow:0 5px #151027;font-weight:1000;letter-spacing:.05em}
+.big:active{transform:translateY(3px);box-shadow:0 2px #151027}
+.secondary{display:block;margin:9px auto 0;background:none;border:0;min-height:44px;color:#f9c4e1;font-weight:700}
+.target{position:absolute;width:clamp(58px,13vw,98px);height:clamp(58px,13vw,98px);padding:0;border:0;background:none;transform:translate(-50%,-50%);border-radius:50%;touch-action:none}
+.target::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--ring) var(--life,100%),#52496750 0);mask-image:radial-gradient(transparent 64%,white 65%);filter:drop-shadow(0 0 4px var(--ring))}
+.target .eye{position:absolute;inset:12%;display:grid;place-items:center;background:var(--fill);border:3px solid #160e25;clip-path:polygon(15% 12%,49% 1%,80% 9%,100% 42%,92% 76%,69% 97%,31% 97%,5% 72%,0 42%);filter:drop-shadow(3px 3px #171229);color:#2c1542;font-weight:1000;font-size:clamp(26px,6vw,49px);animation:appear .18s ease-out both}
+.target.pop{--ring:#ffd479;--fill:radial-gradient(circle at 39% 28%,#ffefb0,#ffad4e 62%,#e7754e)}
+.target.hold{--ring:#ff91d4;--fill:radial-gradient(circle at 39% 28%,#ffbbf4,#ef69b8 62%,#bb3d87)}
+.target.trap{--ring:#9e9ad0;--fill:repeating-linear-gradient(135deg,#6a6195 0 7px,#8780b1 7px 14px)}
+.target .charge{position:absolute;left:17%;right:17%;bottom:10%;height:5px;border-radius:8px;background:#2a193b;overflow:hidden;display:none}
+.target.hold .charge{display:block}.charge::after{content:"";position:absolute;inset:0;background:#fff0c5;transform:scaleX(var(--charge,0));transform-origin:left}
+.legend{margin:14px 0 9px}.legend div{flex:1;display:grid;grid-template-columns:25px auto;column-gap:6px;align-items:center;background:#272142;border-radius:8px;padding:7px}
+.legend .chip{grid-row:span 2;display:grid;place-items:center;width:25px;height:25px;border-radius:47%;color:#241836;font-weight:1000;font-style:normal}
+.pop-chip{background:var(--orange)}.hold-chip{background:var(--pink)}.trap-chip{background:#b0a5e5}
+.legend b{font-size:11px;letter-spacing:.07em}.legend span{font-size:10px;color:#cec1e9}
+footer{align-items:start;min-height:25px;line-height:1.35;font-size:9px}.bonus{color:var(--mint)}
+#effects{pointer-events:none;overflow:hidden;z-index:1}.burst{position:absolute;animation:rise .65s ease-out forwards;white-space:nowrap;font-size:clamp(18px,4vw,32px);font-weight:1000;letter-spacing:-.04em;text-shadow:2px 2px #171125}
+.particle{position:absolute;width:8px;height:8px;border-radius:2px;background:var(--paint);animation:spark .52s ease-out forwards}
+@keyframes appear{from{transform:scale(.45);opacity:.4}to{transform:scale(1);opacity:1}}
+@keyframes rise{0%{transform:translate(-50%,-50%) scale(.7);opacity:1}20%{transform:translate(-50%,-70%) scale(1.08)}100%{transform:translate(-50%,-180%);opacity:0}}
+@keyframes spark{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(var(--x),var(--y)) rotate(140deg);opacity:0}}
+@media(max-width:420px){.scoreboard>div{gap:5px;padding:5px 7px}.scoreboard strong{font-size:21px}.life-panel i{width:11px;height:17px}#stage{height:clamp(255px,57dvh,510px)}}
+@media(max-height:460px) and (orientation:landscape){
+  .cabinet{padding-top:5px;padding-bottom:5px}header,.scoreboard{margin-bottom:5px}.scoreboard>div{padding:3px 8px}
+  #stage{height:max(173px,calc(100dvh - 153px))}.legend{margin:9px 0 0}.legend div{padding:3px 6px}.legend span,footer{display:none}
+  .target{width:54px;height:54px}.target .eye{font-size:28px}
+  .card{padding:8px}.card h1{font-size:35px}.card p{margin:5px 0}.big{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){.target .eye{animation:none}.particle{display:none}}
+</style>
+</head>
+<body>
+<main class="cabinet">
+  <header>
+    <div class="brand"><span class="mini-eye" aria-hidden="true">◉</span> BLINK BURST</div>
+    <div class="top-actions">
+      <button id="sound" class="small" aria-label="Mute sound">♫</button>
+      <button id="pause" class="small" aria-label="Pause game" disabled>Ⅱ</button>
+    </div>
+  </header>
+  <section class="scoreboard" aria-label="Round stats">
+    <div><small>GOO</small><strong id="score">0</strong></div>
+    <div><small>BEST</small><strong id="best">0</strong></div>
+    <div class="life-panel"><small>LIVES</small><div id="lives" aria-label="5 lives"><i></i><i></i><i></i><i></i><i></i></div></div>
+  </section>
+  <section id="stage" aria-label="Target arena">
+    <div class="ink" aria-hidden="true"></div>
+    <div id="targets"></div>
+    <div id="effects" aria-hidden="true"></div>
+    <div id="overlay" class="overlay">
+      <div class="card">
+        <div class="label" id="tag">AFTER HOURS ARCADE</div>
+        <h1 id="title"><span>BLINK</span> BURST</h1>
+        <p id="description">The eyes are opening.</p>
+        <button id="action" class="big">TAP TO PLAY</button>
+        <button id="restart" class="secondary" hidden>Start a new round</button>
+      </div>
+    </div>
+  </section>
+  <section class="legend" aria-label="How to play">
+    <div><i class="chip pop-chip">◉</i><b>POP</b><span>Tap orange</span></div>
+    <div><i class="chip hold-chip">◎</i><b>HOLD</b><span>Charge pink</span></div>
+    <div><i class="chip trap-chip">×</i><b>AVOID</b><span>Skip crossed</span></div>
+  </section>
+  <footer><span id="status" role="status">Miss a good target and lose a life.</span><span id="bonus" hidden></span></footer>
+</main>
+<script>(()=>{
+const HOLD_TIME = 0.58;
+const MAX_LIVES = 5;
+const slots = 9;
+const kinds = ['pop', 'hold', 'trap'];
+const limit = (n,min,max) => Math.min(max,Math.max(min,n));
+
+function makeRun(seed = Date.now() >>> 0) {
+  return {seed:seed>>>0, score:0, lives:MAX_LIVES, combo:0, streak:0, hits:0,
+    clock:0, next:0.35, serial:0, targets:[], finished:false};
+}
+
+function random(run) {
+  run.seed = (Math.imul(1664525,run.seed)+1013904223)>>>0;
+  return run.seed / 4294967296;
+}
+
+function spawn(run) {
+  const free = Array.from({length:slots},(_,i)=>i).filter(i=>!run.targets.some(t=>t.slot===i));
+  if(!free.length) return;
+  const serial = ++run.serial;
+  const chance = random(run);
+  const kind = serial < 3 ? 'pop' : serial === 3 ? 'hold' : serial === 5 ? 'trap'
+    : chance < .19 ? 'trap' : chance < .43 ? 'hold' : 'pop';
+  const duration = Math.max(kind==='hold'?1.7:1.25,3.1-run.clock*.024)+(kind==='hold'?.68:0);
+  const slot = serial===1 ? 4 : free[Math.floor(random(run)*free.length)];
+  run.targets.push({id:serial,kind,slot,remaining:duration,duration});
+}
+
+function damage(run,reason,events,target) {
+  run.lives = Math.max(0,run.lives-1);
+  run.combo = 0;
+  events.push({kind:reason,target});
+  if(!run.lives) {
+    run.finished=true;
+    run.targets=[];
+    events.push({kind:'finish'});
+  }
+}
+
+function advance(run,dt) {
+  const events=[];
+  if(run.finished||!Number.isFinite(dt)||dt<=0) return events;
+  dt=Math.min(dt,.1);
+  run.clock+=dt;
+  for(const target of [...run.targets]) {
+    target.remaining-=dt;
+    if(target.remaining>0) continue;
+    run.targets=run.targets.filter(t=>t.id!==target.id);
+    if(target.kind!=='trap') damage(run,'miss',events,target);
+    if(run.finished) return events;
+  }
+  run.next-=dt;
+  if(run.next<=0) {
+    spawn(run);
+    run.next=Math.max(.58,1.55-run.clock*.018);
+  }
+  return events;
+}
+
+function hit(run,id,held=0) {
+  const events=[];
+  const target=run.targets.find(t=>t.id===id);
+  if(run.finished||!target||target.remaining<=0||target.kind==='hold'&&held<HOLD_TIME) return events;
+  run.targets=run.targets.filter(t=>t.id!==id);
+  if(target.kind==='trap') {
+    damage(run,'trap',events,target);
+    return events;
+  }
+  run.combo++;
+  run.streak=Math.max(run.streak,run.combo);
+  run.hits++;
+  const points=(target.kind==='hold'?25:10)+Math.min(30,Math.floor((run.combo-1)/3)*5);
+  run.score+=points;
+  events.push({kind:'score',target,points});
+  return events;
+}
+
+const defaultProfile = () => ({best:0,sound:true,rewards:{like:false,comment:false},run:null});
+
+function cleanProfile(data) {
+  const profile=defaultProfile();
+  if(!data||typeof data!=='object') return profile;
+  const number=(n,max)=>Number.isFinite(n)&&n>=0&&n<=max;
+  if(Number.isInteger(data.best)&&number(data.best,1e9)) profile.best=data.best;
+  profile.sound=data.sound!==false;
+  profile.rewards={like:data.rewards?.like===true,comment:data.rewards?.comment===true};
+  const r=data.run;
+  if(!r||!['seed','score','lives','combo','streak','hits','serial'].every(k=>Number.isInteger(r[k])&&number(r[k],k==='seed'?4294967295:1e9))||
+    r.lives>MAX_LIVES||r.combo>r.streak||r.streak>r.hits||r.hits>r.serial||
+    !number(r.clock,1e7)||!number(r.next,4)||typeof r.finished!=='boolean'||r.finished!==(r.lives===0)||
+    !Array.isArray(r.targets)||r.targets.length>slots||r.finished&&r.targets.length) return profile;
+  const occupied=new Set(), ids=new Set(), targets=[];
+  for(const t of r.targets) {
+    if(!t||!Number.isInteger(t.id)||t.id<1||t.id>r.serial||ids.has(t.id)||
+      !Number.isInteger(t.slot)||!number(t.slot,slots-1)||occupied.has(t.slot)||!kinds.includes(t.kind)||
+      !number(t.duration,8)||!number(t.remaining,t.duration)||t.remaining===0) return profile;
+    occupied.add(t.slot);ids.add(t.id);
+    targets.push({id:t.id,kind:t.kind,slot:t.slot,duration:t.duration,remaining:t.remaining});
+  }
+  profile.run={seed:r.seed,score:r.score,lives:r.lives,combo:r.combo,streak:r.streak,hits:r.hits,
+    clock:r.clock,next:limit(r.next,0,4),serial:r.serial,targets,finished:r.finished};
+  if(r.finished) profile.best=Math.max(profile.best,r.score);
+  return profile;
+}
+
+function mergeProfile(local,remote) {
+  const incoming=cleanProfile(remote);
+  return {...local,best:Math.max(local.best,incoming.best),run:local.run||incoming.run,
+    rewards:{like:local.rewards.like||incoming.rewards.like,comment:local.rewards.comment||incoming.rewards.comment}};
+}
+
+// Optional host integration. Gameplay never awaits SDK discovery or registration.
+function bridge({host=()=>globalThis.neonlib,read,write,changed=()=>{},schedule=setTimeout,cancel=clearTimeout,timeout=5000}){
+ const game='blink-burst';let alive=true,epoch=0,sdk=null,started=false,ended=false,startHost=null,loadStarted=false,cloudReady=false,dirty=false,saving=false,timers=new Set(),entries=new Map(),support={like:false,comment:false};
+ const later=(fn,ms)=>{let id=schedule(()=>{timers.delete(id);fn();},ms);timers.add(id);return id;};
+ const safeStop=fn=>{try{fn?.();}catch{}};
+ const getHost=()=>{try{let h=host();return h&&typeof h==='object'?h:null;}catch{return null;}};
+ const emit=e=>{if(alive)try{changed(e);}catch{}};
+ function call(h,name){try{if(typeof h?.[name]!=='function')return false;Promise.resolve(h[name]()).catch(()=>{});return true;}catch{return false;}}
+ function notifyStart(){if(started&&!ended&&sdk&&startHost!==sdk&&call(sdk,'gameStart'))startHost=sdk;}
+ function save(){dirty=true;flush();}
+ function flush(){if(!alive||saving||!dirty||!cloudReady||typeof sdk?.saveUserGameState!=='function')return;let snapshot;try{snapshot={game,v:1,profile:JSON.parse(JSON.stringify(read()))};}catch{return;}dirty=false;saving=true;let destination=sdk,gen=epoch,settled=false;
+  const finish=ok=>{if(settled||!alive||gen!==epoch)return;settled=true;cancel(timer);timers.delete(timer);saving=false;if(!ok)dirty=true;else{emit({type:'saved'});if(dirty)flush();}};
+  let timer=later(()=>finish(false),timeout);
+  try{Promise.resolve(destination.saveUserGameState(snapshot)).then(r=>finish(r?.code===0),()=>finish(false));}catch{finish(false);}
+ }
+ function reward(kind,e){if(!alive||!e||typeof e!=='object'||typeof e.project_id!=='string'||!e.project_id.trim()||kind==='like'&&e.status!==true||kind==='comment'&&typeof e.content!=='string')return;let p=read();if(p.rewards?.[kind])return;p.rewards={...p.rewards,[kind]:true};write(p,false);emit({type:'reward',kind});save();}
+ function reg(kind,name,attempt=0){if(!alive||entries.has(kind)||typeof sdk?.[name]!=='function')return;let gen=epoch,entry={live:false,expired:false,stop:null};entries.set(kind,entry);
+  let timer=later(()=>{if(!alive||gen!==epoch)return;entry.expired=true;if(attempt<1&&entries.get(kind)===entry)entries.delete(kind);support[kind]=false;emit({type:'support',...support});if(attempt<1)later(()=>reg(kind,name,attempt+1),1000);},timeout);
+  const callback=e=>{if(alive&&gen===epoch&&entry.live&&!entry.expired)reward(kind,e);};
+  const done=r=>{cancel(timer);timers.delete(timer);let stop=r?.code===0&&typeof r?.data?.unsubscribe==='function'?r.data.unsubscribe:null;if(!alive||gen!==epoch||entry.expired){safeStop(stop);return;}if(r?.code!==0){entry.expired=true;if(r?.code===-2&&attempt<1){entries.delete(kind);later(()=>reg(kind,name,attempt+1),1000);}return;}entry.live=true;entry.stop=stop;support[kind]=true;emit({type:'support',...support});};
+  try{Promise.resolve(sdk[name](callback)).then(done,()=>done(null));}catch{done(null);}
+ }
+ function recognized(raw){return !!raw&&typeof raw==='object'&&!Array.isArray(raw)&&raw.game===game&&raw.v===1&&raw.profile&&typeof raw.profile==='object'&&!Array.isArray(raw.profile);}
+ function connect(){if(!alive)return;let h=getHost();if(!h)return;if(sdk!==h){epoch++;for(let e of entries.values()){e.expired=true;safeStop(e.stop);}entries.clear();support={like:false,comment:false};cloudReady=false;loadStarted=false;saving=false;sdk=h;emit({type:'connected'});}
+  if(!loadStarted&&typeof sdk.loadUserGameState==='function'){loadStarted=true;let gen=epoch,resolved=false;later(()=>{if(alive&&gen===epoch&&!resolved){resolved=true;cloudReady=false;emit({type:'cloudUnavailable'});}},timeout);
+   try{Promise.resolve(sdk.loadUserGameState()).then(raw=>{if(!alive||gen!==epoch||resolved)return;resolved=true;if(recognized(raw)){write(raw.profile,true);emit({type:'cloud'});}cloudReady=recognized(raw)||!!raw&&typeof raw==='object'&&!Array.isArray(raw)&&Object.keys(raw).length===0;if(dirty)flush();},()=>{if(gen===epoch){resolved=true;cloudReady=false;}});}catch{resolved=true;cloudReady=false;}}
+  notifyStart();reg('like','onLike');reg('comment','onComment');if(dirty)flush();
+ }
+ function probe(n=0){connect();if(alive&&n<8)later(()=>probe(n+1),1500);}
+ function nudge(){connect();}const external=typeof globalThis.addEventListener==='function';if(external)for(let name of ['pointerdown','focus','resize'])globalThis.addEventListener(name,nudge,{passive:true});probe();
+ return{save,connect,support:()=>({...support}),prepare(){started=false;ended=false;startHost=null;},start(){connect();if(started&&!ended){notifyStart();return;}started=true;ended=false;notifyStart();},end(){if(!started||ended)return;ended=true;let destination=startHost||getHost();if(destination)call(destination,'gameOver');},
+  viewport(){let h=getHost();try{let v=h?.getGameViewport?.();if(v&&typeof v.then==='function'){Promise.resolve(v).catch(()=>{});return null;}if(v&&Number.isFinite(v.width)&&Number.isFinite(v.height)&&v.width>0&&v.height>0)return{width:v.width,height:v.height,density:Number.isFinite(v.density)&&v.density>0?v.density:1};}catch{}return null;},
+  stop(){if(!alive)return;alive=false;epoch++;if(external)for(let name of ['pointerdown','focus','resize'])globalThis.removeEventListener(name,nudge);for(let t of timers)cancel(t);timers.clear();for(let e of entries.values()){e.expired=true;safeStop(e.stop);}entries.clear();support={like:false,comment:false};}
+ };
+}
+
+
+
+
+const key='blink-burst-v1';
+const el=id=>document.getElementById(id);
+const targetLayer=el('targets'), effectLayer=el('effects');
+const controls=new Map(), held=new Map();
+const names={pop:'Pop target',hold:'Hold target',trap:'Decoy, avoid'};
+const icons={pop:'◉',hold:'◎',trap:'×'};
+let profile=defaultProfile();
+try {
+  const stored=JSON.parse(localStorage.getItem(key));
+  if(stored?.game==='blink-burst'&&stored.v===1) profile=cleanProfile(stored.profile);
+} catch {}
+let playing=false, sdk, audio, lastFrame=0, lastSave=0;
+
+function save(sync=false) {
+  try {localStorage.setItem(key,JSON.stringify({game:'blink-burst',v:1,profile}));}catch {}
+  if(sync) sdk?.save();
+}
+
+function openAudio() {
+  if(!profile.sound) return;
+  try {
+    audio??=new (window.AudioContext||window.webkitAudioContext)();
+    audio.resume().catch(()=>{});
+  } catch {}
+}
+
+function playSound(notes) {
+  if(!profile.sound||!audio||document.hidden) return;
+  for(let i=0;i<notes.length;i++) {
+    const time=audio.currentTime+i*.07, tone=audio.createOscillator(), gain=audio.createGain();
+    tone.type=i===0?'triangle':'sine';
+    tone.frequency.setValueAtTime(notes[i],time);
+    gain.gain.setValueAtTime(.055,time);
+    gain.gain.exponentialRampToValueAtTime(.001,time+.17);
+    tone.connect(gain);gain.connect(audio.destination);
+    tone.start(time);tone.stop(time+.18);
+    tone.onended=()=>{tone.disconnect();gain.disconnect();};
+  }
+}
+
+function mountSDK() {
+  sdk=bridge({
+    read:()=>({...profile}),
+    write:(data,remote)=>{
+      profile=remote?mergeProfile(profile,data):cleanProfile(data);
+      save();
+      draw();
+    },
+    changed:event=>{
+      if(event.type==='reward') {
+        el('status').textContent=event.kind==='like'?'Golden arcade badge unlocked.':'Mint burst confetti unlocked.';
+        playSound([494,659,880]);
+      }
+      if(['reward','support','connected','cloud'].includes(event.type)) draw();
+    },
+  });
+}
+
+function draw() {
+  const r=profile.run, live=r?.lives??5;
+  el('score').textContent=r?.score??0;
+  el('best').textContent=profile.best;
+  el('lives').setAttribute('aria-label',live+' lives');
+  for(const [i,tooth] of [...el('lives').children].entries()) tooth.classList.toggle('lost',i>=live);
+  el('sound').textContent=profile.sound?'♫':'×';
+  el('sound').setAttribute('aria-label',profile.sound?'Mute sound':'Enable sound');
+  el('pause').disabled=!playing;
+  el('overlay').hidden=playing;
+  el('restart').hidden=!r||r.finished;
+  if(!playing) {
+    const tag=el('tag'), title=el('title'), description=el('description'), action=el('action');
+    if(r?.finished) {
+      tag.textContent='ROUND COMPLETE';
+      title.innerHTML='<span>ALL EYES</span> CLOSED';
+      description.textContent=r.score+' goo · '+r.streak+' best combo';
+      action.textContent='POP AGAIN';
+    } else if(r) {
+      tag.textContent='CHECKPOINT SAVED';
+      title.innerHTML='<span>TAKE A</span> BREATH';
+      description.textContent='The eyes will wait.';
+      action.textContent='CONTINUE';
+    } else {
+      tag.textContent='AFTER HOURS ARCADE';
+      title.innerHTML='<span>BLINK</span> BURST';
+      description.textContent='Pop. Charge. Dodge.';
+      action.textContent='TAP TO PLAY';
+    }
+  }
+  const support=sdk?.support(), bonus=[];
+  if(profile.rewards.like||support?.like) bonus.push(profile.rewards.like?'Gold badge equipped.':'Like in GameWave for a gold badge.');
+  if(profile.rewards.comment||support?.comment) bonus.push(profile.rewards.comment?'Mint burst equipped.':'Comment in GameWave for mint bursts.');
+  el('bonus').hidden=!bonus.length;
+  el('bonus').textContent=bonus.join(' ');
+  document.querySelector('.mini-eye').classList.toggle('gold',profile.rewards.like);
+  drawTargets();
+}
+
+function position(slot) {
+  return [17+33*(slot%3),17+33*Math.floor(slot/3)];
+}
+
+function createTarget(t) {
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='target '+t.kind;
+  button.setAttribute('aria-label',names[t.kind]);
+  button.innerHTML='<span class="eye" aria-hidden="true">'+icons[t.kind]+'</span><span class="charge" aria-hidden="true"></span>';
+  const [x,y]=position(t.slot);
+  button.style.left=x+'%';
+  button.style.top=y+'%';
+  button.addEventListener('pointerdown',event=>{
+    if(event.button!==0||!playing) return;
+    event.preventDefault();
+    if(t.kind==='hold') {
+      button.setPointerCapture(event.pointerId);
+      held.set(event.pointerId,{id:t.id,since:profile.run.clock});
+    } else activate(t.id);
+  });
+  for(const name of ['pointerup','pointercancel','lostpointercapture']) {
+    button.addEventListener(name,event=>held.delete(event.pointerId));
+  }
+  button.addEventListener('click',event=>{
+    if(event.detail===0&&t.kind!=='hold') activate(t.id);
+  });
+  button.addEventListener('keydown',event=>{
+    if(t.kind!=='hold'||![' ','Enter'].includes(event.key)||!playing) return;
+    event.preventDefault();
+    if(!event.repeat) held.set('keyboard',{id:t.id,since:profile.run.clock});
+  });
+  button.addEventListener('keyup',()=>held.delete('keyboard'));
+  button.addEventListener('blur',()=>held.delete('keyboard'));
+  targetLayer.append(button);
+  return button;
+}
+
+function drawTargets() {
+  const live=playing?profile.run.targets:[];
+  for(const [id,button] of controls) {
+    if(live.some(t=>t.id===id)) continue;
+    button.remove();
+    controls.delete(id);
+  }
+  for(const t of live) {
+    let button=controls.get(t.id);
+    if(!button) {
+      button=createTarget(t);
+      controls.set(t.id,button);
+    }
+    button.style.setProperty('--life',100*t.remaining/t.duration+'%');
+    const charge=[...held.values()].find(h=>h.id===t.id);
+    button.style.setProperty('--charge',charge?Math.min(1,(profile.run.clock-charge.since)/HOLD_TIME):0);
+  }
+}
+
+function burst(target,caption,color) {
+  const [x,y]=position(target.slot), text=document.createElement('b');
+  text.className='burst';text.textContent=caption;text.style.color=color;
+  text.style.left=x+'%';text.style.top=y+'%';
+  effectLayer.append(text);
+  text.addEventListener('animationend',()=>text.remove(),{once:true});
+  for(let i=0;i<9;i++) {
+    const chip=document.createElement('i'), angle=i*Math.PI*2/9;
+    chip.className='particle';chip.style.left=x+'%';chip.style.top=y+'%';
+    chip.style.setProperty('--paint',color);
+    chip.style.setProperty('--x',Math.cos(angle)*48+'px');
+    chip.style.setProperty('--y',Math.sin(angle)*48+'px');
+    effectLayer.append(chip);
+    chip.addEventListener('animationend',()=>chip.remove(),{once:true});
+    setTimeout(()=>chip.remove(),700);
+  }
+}
+
+function process(events) {
+  if(!events.length) return;
+  for(const event of events) {
+    if(event.kind==='score') {
+      burst(event.target,'+'+event.points,profile.rewards.comment?'#8bf6cc':'#ffdd79');
+      el('status').textContent=profile.run.combo>=3?profile.run.combo+' in a row!':event.target.kind==='hold'?'Charged burst!':'Nice pop!';
+      playSound(event.target.kind==='hold'?[392,523,784]:[510,740]);
+    }
+    if(event.kind==='miss'||event.kind==='trap') {
+      burst(event.target,event.kind==='trap'?'DECOY!':'MISSED!','#ff82b3');
+      el('status').textContent=event.kind==='trap'?'Skip the crossed eyes.':'Watch the shrinking rings.';
+      playSound([168,100]);
+    }
+    if(event.kind==='finish') {
+      playing=false;
+      held.clear();
+      profile.best=Math.max(profile.best,profile.run.score);
+      sdk.end();
+      playSound([392,330,262]);
+    }
+  }
+  save(true);
+  draw();
+}
+
+function activate(id,charge=0) {
+  if(!playing) return;
+  openAudio();
+  process(hit(profile.run,id,charge));
+}
+
+function resume(forceNew=false) {
+  openAudio();
+  if(forceNew||!profile.run||profile.run.finished) {
+    if(playing||profile.run&&!profile.run.finished) sdk.end();
+    sdk.prepare();
+    profile.run=makeRun();
+    effectLayer.replaceChildren();
+  }
+  held.clear();
+  playing=true;
+  lastFrame=performance.now();
+  sdk.start();
+  save(true);
+  draw();
+}
+
+function pause() {
+  if(!playing) return;
+  playing=false;
+  held.clear();
+  save(true);
+  draw();
+}
+
+function tick(now) {
+  if(playing) {
+    const dt=Math.max(0,(now-lastFrame)/1000);
+    process(advance(profile.run,dt));
+    if(playing) {
+      for(const [pointer,hold] of held) {
+        if(!profile.run.targets.some(t=>t.id===hold.id)) held.delete(pointer);
+        else if(profile.run.clock-hold.since>=HOLD_TIME) {
+          held.delete(pointer);
+          activate(hold.id,HOLD_TIME);
+        }
+      }
+      drawTargets();
+      if(now-lastSave>650) {
+        lastSave=now;
+        save();
+      }
+    }
+  }
+  lastFrame=now;
+  requestAnimationFrame(tick);
+}
+
+el('action').addEventListener('click',()=>resume());
+el('restart').addEventListener('click',()=>resume(true));
+el('pause').addEventListener('click',pause);
+el('sound').addEventListener('click',()=>{
+  profile.sound=!profile.sound;
+  if(profile.sound) openAudio();
+  save(true);
+  draw();
+});
+window.addEventListener('keydown',event=>{if(event.key==='Escape') pause();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden) pause();});
+window.addEventListener('pagehide',()=>{pause();save();sdk.stop();});
+window.addEventListener('pageshow',event=>{if(event.persisted) mountSDK();});
+mountSDK();
+draw();
+requestAnimationFrame(tick);
+
+})();</script>
+</body>
+</html>
