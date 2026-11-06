@@ -50,5 +50,6 @@ footer{align-items:start;min-height:25px;line-height:1.35;font-size:9px}.bonus{c
   #stage{height:max(173px,calc(100dvh - 153px))}.legend{margin:9px 0 0}.legend div{padding:3px 6px}.legend span,footer{display:none}
   .target{width:54px;height:54px}.target .eye{font-size:28px}
   .card{padding:8px}.card h1{font-size:35px}.card p{margin:5px 0}.big{min-height:44px}
+  .card .secondary{display:inline-block;margin:0 0 0 6px;vertical-align:middle}
 }
 @media(prefers-reduced-motion:reduce){.target .eye{animation:none}.particle{display:none}}
